@@ -7,7 +7,7 @@ export const useDialogStore = defineStore("dialog", {
     title: "",
     description: "",
     formSchema: null as any,
-    onSubmit: null as ((values: any) => void) | null,
+    onSubmit: null as ((values?: any) => void) | null,
     formSlot: null as any,
   }),
   actions: {
@@ -15,12 +15,17 @@ export const useDialogStore = defineStore("dialog", {
       this.isOpen = true;
       this.title = title;
       this.description = description;
-      this.formSchema = formSchema;
+      this.formSchema = formSchema ? formSchema : null;
       this.onSubmit = onSubmit;
-      this.formSlot = markRaw(formSlot);
+      this.formSlot = formSlot ? markRaw(formSlot) : null;
     },
     closeDialog() {
       this.isOpen = false;
+      this.title = "";
+      this.description = "";
+      this.formSchema = null;
+      this.onSubmit = null;
+      this.formSlot = null;
     },
   },
 });

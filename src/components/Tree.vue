@@ -6,25 +6,28 @@ import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } 
 import { Separator } from './ui/separator';
 import { useFolderStore } from '@/stores/folderStore';
 import type { FolderItem } from '@/types';
+import { useFolderActions } from '@/actions/useFolderActions';
 
 const props = defineProps<{folder: FolderItem}>()
-
 const store = useFolderStore()
 const isFolder = props.folder.type === 'folder'
+
+const { handleCreate, handleDelete } = useFolderActions()
 
 const handleClick = () => {
     if (isFolder) store.selectFolder(props.folder)
 }
+
+// const handleDelete = () => {
+//     console.log(props.folder.id);
+// }
 
 </script>
 
 <template>
     <ContextMenu>
         <ContextMenuTrigger>
-            <SidebarMenuButton 
-                v-if="!isFolder" 
-                class="data-[active-true]:bg-transparent"
-            >
+            <SidebarMenuButton v-if="!isFolder" class="data-[active-true]:bg-transparent">
                 <File />
                 {{ folder.name }}
             </SidebarMenuButton>
@@ -51,11 +54,10 @@ const handleClick = () => {
             </SidebarMenuItem>
         </ContextMenuTrigger>
         <ContextMenuContent>
-            <ContextMenuItem>New file...</ContextMenuItem>
-            <ContextMenuItem>New folder...</ContextMenuItem>
+            <ContextMenuItem @click="handleCreate('file', props.folder.id)">New file...</ContextMenuItem>
+            <ContextMenuItem @click="handleCreate('folder', props.folder.id)">New folder...</ContextMenuItem>
             <Separator />
-            <ContextMenuItem>Rename...</ContextMenuItem>
-            <ContextMenuItem>Delete</ContextMenuItem>
+            <ContextMenuItem @click="handleDelete(props.folder.type=='folder' ? 'folder': 'file', props.folder.id)">Delete</ContextMenuItem>
         </ContextMenuContent>
     </ContextMenu>
 

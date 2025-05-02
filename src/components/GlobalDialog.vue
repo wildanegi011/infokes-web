@@ -25,15 +25,21 @@ const {isOpen, title, description, formSchema, onSubmit, formSlot} = storeToRefs
                 <DialogDescription>{{ description }}</DialogDescription>
             </DialogHeader>
 
-            <Form v-if="formSchema && onSubmit" :validation-schema="formSchema" v-slot="{ handleSubmit }" keep-values>
-                <form id="dialogForm" @submit="handleSubmit($event, onSubmit)">
-                    <component :is="formSlot" />
-                </form>
-
-            </Form>
-            <DialogFooter>
-                <Button type="submit" form="dialogForm">Save</Button>
-            </DialogFooter>
+            <template v-if="formSchema && onSubmit">
+                <Form :validation-schema="formSchema" v-slot="{ handleSubmit }" keep-values>
+                    <form id="dialogForm" @submit="handleSubmit($event, onSubmit)">
+                        <component :is="formSlot" />
+                    </form>
+                </Form>
+                <DialogFooter>
+                    <Button type="submit" form="dialogForm">Save</Button>
+                </DialogFooter>
+            </template>
+            <template v-else>
+                <DialogFooter>
+                    <Button type="submit" @click="onSubmit?.()">Save</Button>
+                </DialogFooter>
+            </template>
         </DialogContent>
     </Dialog>
 </template>
