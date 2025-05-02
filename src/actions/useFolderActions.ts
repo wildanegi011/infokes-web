@@ -2,9 +2,9 @@ import AddForm from "@/components/AddForm.vue";
 import { useDialogStore } from "@/stores/dialogStore";
 import { useFolderStore } from "@/stores/folderStore";
 import { toTypedSchema } from "@vee-validate/zod";
-import axios from "axios";
 import { toast } from "vue-sonner";
 import { z } from "zod";
+import axios from "axios";
 
 export const useFolderActions = () => {
   const dialog = useDialogStore();
@@ -32,7 +32,19 @@ export const useFolderActions = () => {
             parentId,
           });
           toast.success(`${type} created successfully!`);
+          // Simpan ID folder yang sedang dibuka sekarang
+          const currentId = folderStore.selectedFolder?.id;
+
+          // Ambil ulang semua folder
           await folderStore.fetchFolders();
+
+          // Kalau ada folder yang sedang dibuka, cari ulang dan set kembali
+          if (currentId !== undefined) {
+            const updated = folderStore.findFolderById(currentId);
+            if (updated) {
+              folderStore.selectFolder(updated);
+            }
+          }
         } catch {
           toast.error(`Failed to create ${type}.`);
         } finally {
@@ -50,13 +62,28 @@ export const useFolderActions = () => {
         try {
           await axios.delete(`${import.meta.env.VITE_API_URL}/folder/${id}`);
           toast.success(`${type} deleted successfully!`);
+          const currentSelectedId = folderStore.selectedFolder?.id;
+          console.log(currentSelectedId);
+          console.log(id);
+
           await folderStore.fetchFolders();
 
-          const last = folderStore.folderStack.pop();
-          if (last) {
-            folderStore.selectFolderById(last.id); // pastikan kamu punya method ini
-          } else {
-            folderStore.selectedFolder = null;
+          // Jika folder yang dihapus adalah folder yang sedang dibuka
+          if (currentSelectedId === id) {
+            const fallback = folderStore.folderStack.pop();
+            if (fallback) {
+              folderStore.selectFolderById(fallback.id);
+            } else {
+              folderStore.selectedFolder = null;
+            }
+          } else if (currentSelectedId) {
+            // Jika yang dihapus bukan selectedFolder, tetap refresh selectedFolder
+            const updated = folderStore.findFolderById(currentSelectedId);
+            if (updated) {
+              folderStore.selectFolder(updated);
+            } else {
+              folderStore.selectedFolder = null;
+            }
           }
         } catch {
           toast.error(`Failed to delete ${type}.`);

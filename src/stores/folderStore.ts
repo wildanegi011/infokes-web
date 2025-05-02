@@ -33,6 +33,20 @@ export const useFolderStore = defineStore("folder", {
       const target = findFolder(this.folders);
       if (target) this.selectFolder(target);
     },
+    findFolderById(id: number): FolderItem | null {
+      const search = (items: FolderItem[]): FolderItem | null => {
+        for (const item of items) {
+          if (item.id === id) return item;
+          if (item.children) {
+            const found = search(item.children);
+            if (found) return found;
+          }
+        }
+        return null;
+      };
+
+      return search(this.folders);
+    },
     async fetchFolders() {
       try {
         const response = await axios.get(
